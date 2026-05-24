@@ -1,0 +1,68 @@
+name: Electron Windows Release
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Automatically Find Folder, Fix JSON and Build
+        run: |
+          # 1. Poore project mein wo file dhoondna jiske naam mein 'package' aur '.json' aata ho
+          $wrongFile = Get-ChildItem -Recurse -Filter "*package*.json*" | Where-Object { $_.FullName -notlike "*node_modules*" } | Select-Object -First 1
+          
+          if ($wrongFile) {
+              $folderPath = $wrongFile.DirectoryName
+              echo "Electron project folder found at: $folderPath"
+              
+              # 2. Agar file ka naam standard 'package.json' nahi hai to use rename karna
+              if ($wrongFile.Name -ne "package.json") {
+                  echo "Renaming $($wrongFile.Name) to package.json..."
+                  Rename-Item -Path $wrongFile.FullName -NewName "package.json" -Force
+              }
+              
+              # 3. Us folder ke andar ja kar install aur build chalana
+              cd $folderPath
+              echo "Installing dependencies..."
+              npm install
+              
+              echo "Building Electron Windows Executable..."
+              npm run build:win
+          } else {
+              echo "Error: Poore project mein package.json jaisi koi file nahi mili!"
+              exit 1
+          }
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload and Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Electron App Release v1.0.${{ github.run_number }}
+          draft: false
+          prerelease: false
+          # Yeh pure project mein se bani hui .exe file ko khud hi dhoond kar nikal lega
+          files: |
+            **/release/*.exe
+            **/release/*.blockmap
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
