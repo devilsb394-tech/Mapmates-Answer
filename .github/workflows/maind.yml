@@ -1,0 +1,59 @@
+name: Electron Windows Release
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Fix Package JSON, Install and Build App
+        run: |
+          # 1. 'mapmates electron' folder ke andar jana
+          cd "mapmates electron"
+          
+          # 2. Check karna ke kya galat naam wali file mojood hai, agar hai to use 'package.json' banana
+          if (Test-Path "mapmates electron package.json file.json") {
+              echo "Galat naam wali file mil gayi hai. Renaming to package.json..."
+              Rename-Item -Path "mapmates electron package.json file.json" -NewName "package.json" -Force
+          }
+          
+          # 3. Dependencies install karna aur Windows .exe build karna
+          echo "Installing dependencies..."
+          npm install
+          
+          echo "Building Electron Windows Executable..."
+          npm run build:win
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload and Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Electron App Release v1.0.${{ github.run_number }}
+          draft: false
+          prerelease: false
+          # Aapke folder ke mutabiq output release path
+          files: |
+            mapmates electron/release/*.exe
+            mapmates electron/release/*.blockmap
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
