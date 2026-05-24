@@ -1,0 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;900&family=Space+Grotesk:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Courier New", Courier, monospace;
+
+  --color-mm-bg: #050505;
+  --color-mm-card: #0F1115;
+  --color-neon-blue: #00F0FF;
+  --color-neon-red: #FF003C;
+  --color-neon-yellow: #FFFB00;
+  
+  --background-image-mm-gradient: linear-gradient(135deg, #0066FF, #00F0FF);
+}
+
+body {
+  @apply bg-mm-bg text-white font-sans antialiased;
+}

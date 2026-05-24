@@ -1,0 +1,6 @@
+{
+  "name": "Mapmates Answer",
+  "description": "Modern AI search engine with integrated MapMates Pulse trends, localized calculator extensions, and real-time intelligence streams.",
+  "requestFramePermissions": ["microphone", "geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
