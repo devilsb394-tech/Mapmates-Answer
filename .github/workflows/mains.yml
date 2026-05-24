@@ -1,0 +1,40 @@
+name: Manual Electron Release
+
+on:
+  workflow_dispatch: # Is line ki wajah se website par "Run workflow" ka button aayega
+
+jobs:
+  release:
+    runs-on: windows-latest # Sirf Windows (.exe) ke liye build banaye ga
+
+    steps:
+      - name: Check out git repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install # Website se build ke liye clean install
+
+      - name: Build Electron App
+        run: npm run release # Aapki package.json wali build script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Manual Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }} # Har baar naya version number khud banaye ga (v1.0.1, v1.0.2 etc)
+          name: Release v1.0.${{ github.run_number }}
+          draft: false
+          prerelease: false
+          files: |
+            dist/*.exe
+            dist/*.zip
+            out/make/**/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
