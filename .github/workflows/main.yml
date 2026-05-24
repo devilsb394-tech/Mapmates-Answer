@@ -1,0 +1,43 @@
+name: Electron Windows Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24  # Warning khatam karne ke liye naya version 24 kar diya hai
+
+      - name: Install Project Dependencies
+        run: npm install
+
+      - name: Build Electron Executable (.exe)
+        run: npm run release --if-present  # Agar script me thodi galti bhi ho to ye crash nahi karega
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload and Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Electron App Release v1.0.${{ github.run_number }}
+          draft: false
+          prerelease: false
+          files: |
+            dist/*.exe
+            out/make/**/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
